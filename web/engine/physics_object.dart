@@ -97,21 +97,25 @@ abstract class PhysicsObject {
   
   void handleFloorCollision(double floorY) {
     location = new Vec2<double>(location.x, floorY - collisionRect.maxY);
-    velocity = new Vec2<double>(velocity.x, 0.0);
+    double vy = velocity.y > 0.0 ? 0.0 : velocity.y;
+    velocity = new Vec2<double>(velocity.x, vy);
   }
   
   void handleRoofCollision(double roofY) {
     location = new Vec2<double>(location.x, roofY - collisionRect.minY);
-    velocity = new Vec2<double>(velocity.x, 20.0);
+    double vy = velocity.y < 0.0 ? 0.0 : velocity.y;
+    velocity = new Vec2<double>(velocity.x, vy);
   }
   
   void handleLeftWallCollision(double wallX) {
     location = new Vec2<double>(wallX - collisionRect.minX, location.y);
-    velocity = new Vec2<double>(0.0, velocity.y);
+    double vx = velocity.x < 0.0 ? 0.0 : velocity.x;
+    velocity = new Vec2<double>(vx, velocity.y);
   }
   
   void handleRightWallCollision(double wallX) {
     location = new Vec2<double>(wallX - collisionRect.maxX, location.y);
-    velocity = new Vec2<double>(0.0, velocity.y);
+    double vx = velocity.x > 0.0 ? 0.0 : velocity.x;
+    velocity = new Vec2<double>(vx, velocity.y);
   }
 }
