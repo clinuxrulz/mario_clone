@@ -1,6 +1,8 @@
 part of engine;
 
 abstract class PhysicsObject {
+  Vec2<double> _lastLocation = new Vec2<double>(0.0,0.0);
+  Vec2<double> _lastVelocity = new Vec2<double>(0.0,0.0);
   Vec2<double> location = new Vec2<double>(0.0,0.0);
   Vec2<double> velocity = new Vec2<double>(0.0,0.0);
   Vec2<double> acceleration = new Vec2<double>(0.0,0.0);
@@ -10,6 +12,8 @@ abstract class PhysicsObject {
   
   void updatePhysics(Engine engine) {
     double dt = engine.dt;
+    _lastLocation = location;
+    _lastVelocity = velocity;
     Vec2<double> newLocation = location + velocity * dt;
     Vec2<double> newVelocity = (velocity + acceleration * dt) * pow(damping,dt);
     location = newLocation;
@@ -63,48 +67,51 @@ abstract class PhysicsObject {
         if (tileGid != 1351) {
           continue;
         }
-        bool floorHandled;
+        double tileMinX = (col * engine.level.tileWidth).toDouble();
+        double tileMinY = (row * engine.level.tileHeight).toDouble();
+        double tileMaxX = tileMinX + engine.level.tileWidth-1;
+        double tileMaxY = tileMinY + engine.level.tileHeight-1;
         if (row > 0 && collisionLayer.getGlobalTileId(row-1, col) != 1351) {
-          handleFloorCollision((row * engine.level.tileHeight).toDouble());
+          if (_lastLocation.y + collisionRect.maxY - 1 < tileMinY && collisionArea.maxX > tileMinX && collisionArea.minX < tileMaxX) {
+            handleFloorCollision(tileMinY);
+          }
         }
         if (row < engine.level.rows-1 && collisionLayer.getGlobalTileId(row+1, col) != 1351) {
-          handleRoofCollision((row * engine.level.tileHeight + engine.level.tileHeight-1).toDouble());
-        }
-        if (col > 0 && collisionLayer.getGlobalTileId(row, col-1) != 1351) {
-          handleLeftWallCollision((col * engine.level.tileWidth + engine.level.tileWidth - 1).toDouble());
+          if (_lastLocation.y + collisionRect.minY + 1 > tileMaxY && collisionArea.maxX > tileMinX && collisionArea.minX < tileMaxX) {
+            handleRoofCollision(tileMaxY);
+          }
         }
         if (col < engine.level.cols-1 && collisionLayer.getGlobalTileId(row, col+1) != 1351) {
-          handleRightWallCollision((col * engine.level.tileWidth).toDouble());
+          if (_lastLocation.x + collisionRect.minX + 1 > tileMaxX && collisionArea.maxY > tileMinY && collisionArea.minY < tileMaxY) {
+            handleLeftWallCollision(tileMaxX);
+          }
+        }
+        if (col > 0 && collisionLayer.getGlobalTileId(row, col-1) != 1351) {
+          if (_lastLocation.x + collisionRect.maxX - 1 < tileMinX && collisionArea.maxY > tileMinY && collisionArea.minY < tileMaxY) {
+            handleRightWallCollision((col * engine.level.tileWidth).toDouble());
+          }
         }
       }
     }
   }
   
   void handleFloorCollision(double floorY) {
-    if (collisionArea.minY < floorY && collisionArea.maxY > floorY) {
-      location = new Vec2<double>(location.x, floorY - collisionRect.len.y - collisionRect.pos.y);
-      velocity = new Vec2<double>(velocity.x, 0.0);
-    }
+    location = new Vec2<double>(location.x, floorY - collisionRect.maxY);
+    velocity = new Vec2<double>(velocity.x, 0.0);
   }
   
   void handleRoofCollision(double roofY) {
-    if (collisionArea.minY < roofY && collisionArea.maxY > roofY) {
-      location = new Vec2<double>(location.x, roofY - collisionRect.pos.y);
-      velocity = new Vec2<double>(velocity.x, 20.0);
-    }
+    location = new Vec2<double>(location.x, roofY - collisionRect.minY);
+    velocity = new Vec2<double>(velocity.x, 20.0);
   }
   
   void handleLeftWallCollision(double wallX) {
-    if (collisionArea.minX < wallX && collisionArea.maxX > wallX) {
-      location = new Vec2<double>(wallX - collisionRect.pos.x, location.y);
-      velocity = new Vec2<double>(0.0, velocity.y);
-    }
+    location = new Vec2<double>(wallX - collisionRect.minX, location.y);
+    velocity = new Vec2<double>(0.0, velocity.y);
   }
   
   void handleRightWallCollision(double wallX) {
-    if (collisionArea.minX < wallX && collisionArea.maxX > wallX) {
-      location = new Vec2<double>(wallX - collisionRect.len.x - collisionRect.pos.x, location.y);
-      velocity = new Vec2<double>(0.0, velocity.y);
-    }
+    location = new Vec2<double>(wallX - collisionRect.maxX, location.y);
+    velocity = new Vec2<double>(0.0, velocity.y);
   }
 }
