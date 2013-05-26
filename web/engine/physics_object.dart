@@ -10,6 +10,10 @@ abstract class PhysicsObject {
   double damping = 0.40;
   Rect<int> collisionRect = new Rect<int>(new Vec2<int>(0,0), new Vec2<int>(16,29));
   
+  Vec2<double> get lastLocation {
+    return _lastLocation;
+  }
+  
   void updatePhysics(Engine engine) {
     double dt = engine.dt;
     _lastLocation = location;

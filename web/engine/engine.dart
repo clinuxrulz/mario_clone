@@ -30,6 +30,8 @@ part 'impl/tmx_tilemap.dart';
 part 'impl/tmx_tile_layer.dart';
 part 'impl/tmx_tilemap_loader.dart';
 
+typedef void CollisionResolution(GameObject o1, GameObject o2);
+
 class Engine {
   static const int GRAPHICS_TARGET_HTML_5_CANVAS = 0;
   static const int GRAPHICS_TARGET_WEB_GL = 1;
@@ -39,7 +41,9 @@ class Engine {
   Vec2<int> cameraLoc = new Vec2<int>(0,0);
   double dt = 0.01;
   List<GameObject> objectPool = new List<GameObject>();
+  List<GameObject> deadObjectPool = new List<GameObject>();
   Tilemap level;
+  CollisionResolution collisionResolution = (_1, _2) {};
   
   int _graphicsTarget;
   
@@ -183,10 +187,29 @@ class Engine {
   }
   
   void update(double dt) {
+    deadObjectPool.forEach((GameObject go) { objectPool.remove(go); });
+    deadObjectPool.clear();
     this.dt = dt;
     objectPool.forEach((GameObject go) {
       go.update(this);
     });
+    _doObjectObjectCollision();
+  }
+  
+  void _doObjectObjectCollision() {
+    for (int i = 0; i < objectPool.length-1; ++i) {
+      GameObject o1 = objectPool[i];
+      Rect<int> cArea1 = o1.collisionArea;
+      for (int j = i+1; j < objectPool.length; ++j) {
+        GameObject o2 = objectPool[j];
+        Rect<int> cArea2 = o2.collisionArea;
+        if (cArea1.minX < cArea2.maxX && cArea1.maxX > cArea2.minX && 
+            cArea1.minY < cArea2.maxY && cArea1.maxY > cArea2.minY)
+        {
+          collisionResolution(o1, o2);
+        }
+      }
+    }
   }
   
   void draw(Surface screen) {
