@@ -62,9 +62,9 @@ void main() {
   world.addSystem(new RenderingSystem(), passive: true);
   
   world.initialize();
-  for (int i = 0; i < 5; ++i) {
-    num vx = cos(i * 6 * 180 / 3.14) * 200;
-    num vy = -sin(i * 6 * 180 / 3.14) * 200;
+  for (int i = 0; i < 3; ++i) {
+    num vx = cos((i+1) * 20 * 3.14 / 180.0) * 200;
+    num vy = -sin((i+1) * 20 * 3.14 / 180.0) * 200;
     Entity player = world.createEntity();
     player.addComponent(new Damping(0.4));
     player.addComponent(new Position(0.0, 300));
@@ -83,15 +83,17 @@ void main() {
   }
   
   { // Goomba
-    world.createEntity()
-      ..addComponent(new Position(100, 300))
-      ..addComponent(new Velocity(0,0))
-      ..addComponent(new Acceleration(0,500))
-      ..addComponent(new AnimationFrame(animation: goombaWalkAnimation))
-      ..addComponent(new CollisionRect(x:0, y:0, lenX:16, lenY:16))
-      ..addComponent(new CharacterTypeComponent(CharacterType.GOOMBA))
-      ..addComponent(new SquisheeComponent(squishAnimation: goombaSquishedAnimation, timeUntilDisappear: 2))
-      ..addToWorld();
+    for (int i = 0; i < 20; ++i) {
+      world.createEntity()
+        ..addComponent(new Position(100 + 50 * i, 300))
+        ..addComponent(new Velocity(0,0))
+        ..addComponent(new Acceleration(0,500))
+        ..addComponent(new AnimationFrame(animation: goombaWalkAnimation))
+        ..addComponent(new CollisionRect(x:0, y:0, lenX:16, lenY:16))
+        ..addComponent(new CharacterTypeComponent(CharacterType.GOOMBA))
+        ..addComponent(new SquisheeComponent(squishAnimation: goombaSquishedAnimation, timeUntilDisappear: 2))
+        ..addToWorld();
+    }
   }
   
   engine.loadResources().then((_) {
