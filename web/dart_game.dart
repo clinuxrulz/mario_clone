@@ -25,6 +25,9 @@ part 'cam_follow.dart';
 part 'cam_follow_system.dart';
 part 'character_type.dart';
 part 'character_type_component.dart';
+part 'squishee_component.dart';
+part 'squisher_component.dart';
+part 'squish_system.dart';
 
 World world = new World();
 
@@ -50,57 +53,13 @@ void main() {
   engine.inputManager.bind(html.KeyCode.X, "run");
   engine.inputManager.bind(html.KeyCode.X, "pickUp");
   
-  Player mario = new Player();
-  mario.currentAnimation = marioWalkAnimation;
-  mario.location = new Engine.Vec2<double>(0.0, 300.0);
-  engine.objectPool.add(mario);
-  
-  {
-    Goomba goomba = new Goomba();
-    goomba.currentAnimation = goombaWalkAnimation;
-    goomba.location = new Engine.Vec2<double>(300.0, 300.0);
-    engine.objectPool.add(goomba);
-  }
-  {
-    Goomba goomba = new Goomba();
-    goomba.currentAnimation = goombaWalkAnimation;
-    goomba.location = new Engine.Vec2<double>(250.0, 300.0);
-    engine.objectPool.add(goomba);
-  }
-  {
-    Goomba goomba = new Goomba();
-    goomba.currentAnimation = goombaWalkAnimation;
-    goomba.location = new Engine.Vec2<double>(450.0, 300.0);
-    engine.objectPool.add(goomba);
-  }
-  
-  engine.collisionResolution = (Engine.GameObject o1, Engine.GameObject o2) {
-    Player player = null;
-    Goomba goomba = null;
-    if (o1 is Goomba) {
-      goomba = o1;
-    } else if (o1 is Player) {
-      player = o1;
-    }
-    if (o2 is Goomba) {
-      goomba = o2;
-    } else if (o2 is Player) {
-      player = o2;
-    }
-    if (player != null && goomba != null && goomba.alive) {
-      if (player.lastLocation.y + player.collisionRect.maxY < goomba.location.y + goomba.collisionRect.minY) {
-        player.velocity = new Engine.Vec2<double>(player.velocity.x, -player.velocity.y);
-        goomba.squishDie(engine);
-      }
-    }
-  };
-  
   world.addSystem(new KeyboardSystem(), passive: false);
   world.addSystem(new MovementSystem(), passive: false);
   world.addSystem(new AnimationSystem(), passive: false);
   world.addSystem(new TileCollisionSystem(), passive: false);
+  world.addSystem(new SquishSystem(), passive: false);
   world.addSystem(new CamFollowSystem(), passive: false);
-  world.addSystem(new RenderingSystem(), passive: false);
+  world.addSystem(new RenderingSystem(), passive: true);
   
   world.initialize();
   for (int i = 0; i < 5; ++i) {
@@ -119,7 +78,20 @@ void main() {
     if (i == 0) {
       player.addComponent(new CamFollow());
     }
+    player.addComponent(new SquisherComponent());
     player.addToWorld();
+  }
+  
+  { // Goomba
+    world.createEntity()
+      ..addComponent(new Position(100, 300))
+      ..addComponent(new Velocity(0,0))
+      ..addComponent(new Acceleration(0,500))
+      ..addComponent(new AnimationFrame(animation: goombaWalkAnimation))
+      ..addComponent(new CollisionRect(x:0, y:0, lenX:16, lenY:16))
+      ..addComponent(new CharacterTypeComponent(CharacterType.GOOMBA))
+      ..addComponent(new SquisheeComponent(squishAnimation: goombaSquishedAnimation, timeUntilDisappear: 2))
+      ..addToWorld();
   }
   
   engine.loadResources().then((_) {
@@ -131,9 +103,10 @@ void main() {
         max((mario.location.x + 9.0 - 0.5 * screen.width).toInt(), 0),
         (mario.location.y + 16.0 - 0.5 * screen.height).toInt()
       );*/
-      engine.draw(screen);
       world.delta = 0.02;
       world.process();
+      engine.draw(screen);
+      world.getSystem(RenderingSystem).process();
     });
   });
 }
