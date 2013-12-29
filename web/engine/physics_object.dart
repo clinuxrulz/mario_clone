@@ -19,7 +19,8 @@ abstract class PhysicsObject {
     _lastLocation = location;
     _lastVelocity = velocity;
     Vec2<double> newLocation = location + velocity * dt;
-    Vec2<double> newVelocity = (velocity + acceleration * dt) * pow(damping,dt);
+    Vec2<double> newVelocity = (velocity + acceleration * dt);
+    newVelocity = newVelocity * (1.0 - damping * dt);
     location = newLocation;
     velocity = newVelocity;
     double vx, vy;

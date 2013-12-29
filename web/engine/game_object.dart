@@ -6,7 +6,8 @@ class GameObject extends PhysicsObject {
   double timeUntilNextFrame;
   bool flipX = false;
   
-  GameObject({this._currentAnimation}) {
+  GameObject({Animation currentAnimation}) {
+    this._currentAnimation = currentAnimation;
     currentAnimationFrame = 0;
   }
   

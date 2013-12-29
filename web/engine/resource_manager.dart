@@ -21,7 +21,7 @@ class ResourceManager {
   }
   
   void setResourceData(String name, var data) {
-    if (!_resources.contains(name)) {
+    if (!_resources.containsKey(name)) {
       throw new Exception("resource not found");
     }
     _resources[name].data = data;

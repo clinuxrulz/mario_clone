@@ -2,7 +2,7 @@ library engine;
 
 import 'dart:async';
 import 'dart:html';
-import 'dart:crypto';
+import 'package:crypto/crypto.dart';
 import 'dart:math';
 import 'package:xml/xml.dart';
 
@@ -98,7 +98,7 @@ class Engine {
       case GRAPHICS_TARGET_WEB_GL:
         throw new UnimplementedError();
       default:
-        throw new AssertionError("Invalid Graphics Target");
+        throw new Exception("Invalid Graphics Target");
     }
   }
   
@@ -109,7 +109,7 @@ class Engine {
       case GRAPHICS_TARGET_WEB_GL:
         throw new UnimplementedError();
       default:
-        throw new AssertionError("Invalid Graphics Target");
+        throw new Exception("Invalid Graphics Target");
     }
   }
   
@@ -161,10 +161,10 @@ class Engine {
   }
   
   void drawMap(Surface screen, Tilemap map) {
-    int firstRow = (cameraLoc.y / map.tileHeight).toInt();
-    int lastRow = ((cameraLoc.y + screen.height + (map.tileHeight-1)) / map.tileHeight).toInt();
-    int firstCol = (cameraLoc.x / map.tileWidth).toInt();
-    int lastCol = ((cameraLoc.x + screen.width + (map.tileWidth-1)) / map.tileWidth).toInt();
+    int firstRow = cameraLoc.y ~/ map.tileHeight;
+    int lastRow = (cameraLoc.y + screen.height + (map.tileHeight-1)) ~/ map.tileHeight;
+    int firstCol = cameraLoc.x ~/ map.tileWidth;
+    int lastCol = (cameraLoc.x + screen.width + (map.tileWidth-1)) ~/ map.tileWidth;
     int offsetX = firstCol * map.tileWidth - cameraLoc.x;
     int offsetY = firstRow * map.tileHeight - cameraLoc.y;
     screen.fillRect(0, 0, screen.width, screen.height, map.backgroundColour);
@@ -176,7 +176,7 @@ class Engine {
           if (gid == 0) { continue; }
           if (gid >= 1351) { continue; }
           Image tilesetImg = _resourceManager.lookupResource("sma4_tiles").data;
-          int sr = ((gid-1)/54).toInt();
+          int sr = (gid-1)~/54;
           int sc = (gid-1)%54;
           int sx = sc * 18 + 2;
           int sy = sr * 18 + 2;
